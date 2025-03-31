@@ -1,5 +1,6 @@
 
 import { cn } from "@/lib/utils";
+import { Loader2, Terminal } from "lucide-react";
 
 interface OutputPanelProps {
   output: string;
@@ -15,22 +16,27 @@ export function OutputPanel({
   return (
     <div
       className={cn(
-        "flex flex-col h-full w-full bg-editor-background text-editor-foreground font-mono p-4 overflow-auto rounded-md",
+        "flex flex-col h-full w-full bg-card text-foreground font-mono p-2 overflow-auto rounded-md",
         className
       )}
     >
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium">Output</h3>
+      <div className="flex items-center justify-between mb-2 p-2 bg-muted/30 rounded-md">
+        <div className="flex items-center gap-2">
+          <Terminal className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-medium">Output</h3>
+        </div>
         {isLoading && (
           <div className="flex items-center">
-            <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+            <Loader2 className="animate-spin mr-2 h-4 w-4 text-primary" />
             <span className="text-xs">Running...</span>
           </div>
         )}
       </div>
-      <pre className="flex-1 whitespace-pre-wrap text-sm">
-        {output || "// Output will appear here after running code"}
-      </pre>
+      <div className="flex-1 p-2 bg-card rounded-md">
+        <pre className="whitespace-pre-wrap text-sm">
+          {output || "// Output will appear here after running code"}
+        </pre>
+      </div>
     </div>
   );
 }
