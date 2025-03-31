@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { Play, RefreshCw, FileCode, Menu, Eye, EyeOff } from "lucide-react";
+import { Play, RefreshCw, FileCode, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/CodeEditor";
 import { OutputPanel } from "@/components/OutputPanel";
@@ -13,8 +13,6 @@ import { defaultCode } from "@/lib/examples";
 import { useMobileDetect } from "@/hooks/useMobileDetect";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { CodePreview } from "@/components/CodePreview";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [code, setCode] = useState(defaultCode);
@@ -23,7 +21,6 @@ const Index = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useMobileDetect();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
 
   const runCode = useCallback(async () => {
     try {
@@ -114,73 +111,19 @@ const Index = () => {
                   <RefreshCw className="h-4 w-4" />
                   <span>Reset</span>
                 </Button>
-
-                {!isMobile && (
-                  <Tabs defaultValue="editor" value={activeTab} onValueChange={(v) => setActiveTab(v as "editor" | "preview")} className="ml-4">
-                    <TabsList className="grid grid-cols-2 w-[200px]">
-                      <TabsTrigger value="editor" className="flex items-center gap-1">
-                        <FileCode className="h-4 w-4" />
-                        Editor
-                      </TabsTrigger>
-                      <TabsTrigger value="preview" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        Preview
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                )}
               </div>
-
-              {isMobile && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setActiveTab(activeTab === "editor" ? "preview" : "editor")}
-                  className="flex items-center gap-1"
-                >
-                  {activeTab === "editor" ? (
-                    <>
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only md:not-sr-only">Preview</span>
-                    </>
-                  ) : (
-                    <>
-                      <FileCode className="h-4 w-4" />
-                      <span className="sr-only md:not-sr-only">Editor</span>
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
 
             {/* Editor and output panels */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Editor/Preview Section */}
+              {/* Editor Section */}
               <div className="flex-1 overflow-hidden">
-                {!isMobile ? (
-                  <Tabs value={activeTab} className="h-full">
-                    <TabsContent value="editor" className="h-full mt-0">
-                      <CodeEditor
-                        value={code}
-                        onChange={setCode}
-                        language="python" // Using Python as closest syntax to Jaclang
-                        className="border-b h-full"
-                      />
-                    </TabsContent>
-                    <TabsContent value="preview" className="h-full mt-0">
-                      <CodePreview code={code} />
-                    </TabsContent>
-                  </Tabs>
-                ) : activeTab === "editor" ? (
-                  <CodeEditor
-                    value={code}
-                    onChange={setCode}
-                    language="python" // Using Python as closest syntax to Jaclang
-                    className="border-b h-full"
-                  />
-                ) : activeTab === "preview" ? (
-                  <CodePreview code={code} />
-                ) : null}
+                <CodeEditor
+                  value={code}
+                  onChange={setCode}
+                  language="python" // Using Python as closest syntax to Jaclang
+                  className="border-b h-full"
+                />
               </div>
 
               {/* Output Panel */}
