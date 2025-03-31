@@ -116,7 +116,7 @@ const Index = () => {
                 </Button>
 
                 {!isMobile && (
-                  <Tabs defaultValue="editor" value={activeTab} onValueChange={(v) => setActiveTab(v as "editor" | "preview")} className="ml-4">
+                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "editor" | "preview")} className="ml-4">
                     <TabsList className="grid grid-cols-2 w-[200px]">
                       <TabsTrigger value="editor" className="flex items-center gap-1">
                         <FileCode className="h-4 w-4" />
@@ -158,19 +158,14 @@ const Index = () => {
               {/* Editor/Preview Section */}
               <div className="flex-1 overflow-hidden">
                 {!isMobile ? (
-                  <Tabs value={activeTab} className="h-full">
-                    <TabsContent value="editor" className="h-full mt-0">
-                      <CodeEditor
-                        value={code}
-                        onChange={setCode}
-                        language="python" // Using Python as closest syntax to Jaclang
-                        className="border-b h-full"
-                      />
-                    </TabsContent>
-                    <TabsContent value="preview" className="h-full mt-0">
-                      <CodePreview code={code} />
-                    </TabsContent>
-                  </Tabs>
+                  <TabsContent value="editor" className="h-full mt-0">
+                    <CodeEditor
+                      value={code}
+                      onChange={setCode}
+                      language="python" // Using Python as closest syntax to Jaclang
+                      className="border-b h-full"
+                    />
+                  </TabsContent>
                 ) : activeTab === "editor" ? (
                   <CodeEditor
                     value={code}
@@ -178,6 +173,12 @@ const Index = () => {
                     language="python" // Using Python as closest syntax to Jaclang
                     className="border-b h-full"
                   />
+                ) : null}
+
+                {!isMobile ? (
+                  <TabsContent value="preview" className="h-full mt-0">
+                    <CodePreview code={code} />
+                  </TabsContent>
                 ) : activeTab === "preview" ? (
                   <CodePreview code={code} />
                 ) : null}
