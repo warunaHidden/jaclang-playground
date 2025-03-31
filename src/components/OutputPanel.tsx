@@ -32,7 +32,7 @@ export function OutputPanel({
           </div>
         )}
       </div>
-      <div className="flex-1 p-2 bg-card rounded-md">
+      <div className="flex-1 p-2 bg-editor-background rounded-md text-editor-foreground">
         <pre className="whitespace-pre-wrap text-sm">
           {output || "// Output will appear here after running code"}
         </pre>
