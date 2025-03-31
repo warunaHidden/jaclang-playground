@@ -158,14 +158,19 @@ const Index = () => {
               {/* Editor/Preview Section */}
               <div className="flex-1 overflow-hidden">
                 {!isMobile ? (
-                  <TabsContent value="editor" className="h-full mt-0">
-                    <CodeEditor
-                      value={code}
-                      onChange={setCode}
-                      language="python" // Using Python as closest syntax to Jaclang
-                      className="border-b h-full"
-                    />
-                  </TabsContent>
+                  <Tabs value={activeTab} className="h-full">
+                    <TabsContent value="editor" className="h-full mt-0">
+                      <CodeEditor
+                        value={code}
+                        onChange={setCode}
+                        language="python" // Using Python as closest syntax to Jaclang
+                        className="border-b h-full"
+                      />
+                    </TabsContent>
+                    <TabsContent value="preview" className="h-full mt-0">
+                      <CodePreview code={code} />
+                    </TabsContent>
+                  </Tabs>
                 ) : activeTab === "editor" ? (
                   <CodeEditor
                     value={code}
@@ -173,15 +178,9 @@ const Index = () => {
                     language="python" // Using Python as closest syntax to Jaclang
                     className="border-b h-full"
                   />
-                ) : null}
-
-                {!isMobile ? (
-                  <TabsContent value="preview" className="h-full mt-0">
-                    <CodePreview code={code} />
-                  </TabsContent>
-                ) : activeTab === "preview" ? (
+                ) : (
                   <CodePreview code={code} />
-                ) : null}
+                )}
               </div>
 
               {/* Output Panel */}
