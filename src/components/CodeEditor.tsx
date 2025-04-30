@@ -44,7 +44,10 @@ export function CodeEditor({
     if (onBreakpointChange) {
       editor.onMouseDown((e) => {
         if (e.target.type === 1) { // Line numbers margin
-          const lineNumber = e.target.position?.lineNumber;
+          const position = e.target.position;
+          const lineNumber = position?.lineNumber;
+          
+          // Check if position exists and has a lineNumber
           if (lineNumber) {
             const newBreakpoints = [...breakpoints];
             const index = newBreakpoints.indexOf(lineNumber);
