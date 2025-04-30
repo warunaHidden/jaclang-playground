@@ -8,11 +8,14 @@ import { ExamplesSidebar } from "@/components/ExamplesSidebar";
 import { ResizablePanel } from "@/components/ResizablePanel";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { executeCode } from "@/lib/codeService";
+import { executeCode, prepareDebugSession, endDebugSession, debugContinue, debugStepOver, debugStepInto, debugStepOut, debugRestart, getCurrentDebugState, DebugInfo } from "@/lib/codeService";
 import { defaultCode } from "@/lib/examples";
 import { useMobileDetect } from "@/hooks/useMobileDetect";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { DebugPanel, DebugVariable } from "@/components/DebugPanel";
+import { DebugControl, DebugAction } from "@/components/DebugControl";
+import { ResizablePanelGroup, ResizableHandle } from "@/components/ui/resizable";
 
 const Index = () => {
   const [code, setCode] = useState(defaultCode);
@@ -21,9 +24,34 @@ const Index = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useMobileDetect();
   const { toast } = useToast();
+  
+  // Debugger state
+  const [isDebugging, setIsDebugging] = useState(false);
+  const [debugActive, setDebugActive] = useState(false);
+  const [breakpoints, setBreakpoints] = useState<number[]>([]);
+  const [currentLine, setCurrentLine] = useState<number | undefined>(undefined);
+  const [debugVariables, setDebugVariables] = useState<DebugVariable[]>([]);
 
   const runCode = useCallback(async () => {
     try {
+      if (isDebugging) {
+        // Start/restart debugging session
+        prepareDebugSession(code, breakpoints);
+        const initialDebugState = getCurrentDebugState();
+        
+        if (initialDebugState) {
+          setCurrentLine(initialDebugState.line);
+          setDebugVariables(initialDebugState.variables);
+          setDebugActive(true);
+          setOutput("Debugger started. Use the controls to step through the code.");
+        } else {
+          setOutput("No debug steps available.");
+          setDebugActive(false);
+        }
+        return;
+      }
+
+      // Regular code execution (non-debug mode)
       setIsRunning(true);
       setOutput("");
       const result = await executeCode(code);
@@ -39,11 +67,75 @@ const Index = () => {
     } finally {
       setIsRunning(false);
     }
-  }, [code, toast]);
+  }, [code, toast, isDebugging, breakpoints]);
+
+  const handleDebugAction = useCallback((action: DebugAction) => {
+    if (action === "toggle") {
+      if (isDebugging) {
+        // Stop debugging
+        endDebugSession();
+        setIsDebugging(false);
+        setDebugActive(false);
+        setCurrentLine(undefined);
+        setDebugVariables([]);
+        setOutput("");
+        toast({
+          title: "Debugger Stopped",
+          description: "Debug session has ended.",
+        });
+      } else {
+        // Start debugging
+        setIsDebugging(true);
+        runCode(); // This will prepare the debug session
+      }
+      return;
+    }
+    
+    // Handle debug navigation actions
+    let nextStep: DebugInfo | null = null;
+    
+    switch(action) {
+      case "continue":
+        nextStep = debugContinue();
+        break;
+      case "stepOver":
+        nextStep = debugStepOver();
+        break;
+      case "stepInto":
+        nextStep = debugStepInto();
+        break;
+      case "stepOut":
+        nextStep = debugStepOut();
+        break;
+      case "restart":
+        nextStep = debugRestart();
+        break;
+    }
+    
+    if (nextStep) {
+      setCurrentLine(nextStep.line);
+      setDebugVariables(nextStep.variables);
+    } else if (action !== "toggle") {
+      setDebugActive(false);
+      toast({
+        title: "Debug Complete",
+        description: "Reached the end of debug session.",
+      });
+    }
+  }, [isDebugging, runCode, toast]);
 
   const handleReset = () => {
     setCode(defaultCode);
     setOutput("");
+    
+    if (isDebugging) {
+      endDebugSession();
+      setIsDebugging(false);
+      setDebugActive(false);
+      setCurrentLine(undefined);
+      setDebugVariables([]);
+    }
+    
     toast({
       title: "Editor Reset",
       description: "Code has been reset to default example.",
@@ -64,6 +156,10 @@ const Index = () => {
   const toggleMobileSidebar = () => {
     setShowMobileSidebar(!showMobileSidebar);
   };
+
+  const handleBreakpointChange = useCallback((newBreakpoints: number[]) => {
+    setBreakpoints(newBreakpoints);
+  }, []);
 
   return (
     <ThemeProvider>
@@ -101,7 +197,7 @@ const Index = () => {
                   className="space-x-1 bg-primary hover:bg-primary/90"
                 >
                   <Play className="h-4 w-4" />
-                  <span>Run</span>
+                  <span>{isDebugging ? "Start Debug" : "Run"}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -111,6 +207,13 @@ const Index = () => {
                   <RefreshCw className="h-4 w-4" />
                   <span>Reset</span>
                 </Button>
+
+                <DebugControl
+                  onAction={handleDebugAction}
+                  isDebugging={isDebugging}
+                  isActive={debugActive}
+                  className="ml-2"
+                />
               </div>
             </div>
 
@@ -118,12 +221,40 @@ const Index = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Editor Section */}
               <div className="flex-1 overflow-hidden">
-                <CodeEditor
-                  value={code}
-                  onChange={setCode}
-                  language="python" // Using Python as closest syntax to Jaclang
-                  className="h-full"
-                />
+                {!isDebugging ? (
+                  <CodeEditor
+                    value={code}
+                    onChange={setCode}
+                    language="python" // Using Python as closest syntax to Jaclang
+                    className="h-full"
+                    breakpoints={breakpoints}
+                    onBreakpointChange={handleBreakpointChange}
+                  />
+                ) : (
+                  <ResizablePanelGroup direction="horizontal">
+                    <ResizablePanel defaultSize={50}>
+                      <CodeEditor
+                        value={code}
+                        onChange={setCode}
+                        language="python"
+                        className="h-full"
+                        breakpoints={breakpoints}
+                        onBreakpointChange={handleBreakpointChange}
+                        currentLine={currentLine}
+                        debugMode={isDebugging}
+                      />
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={50}>
+                      <DebugPanel
+                        variables={debugVariables}
+                        currentLine={currentLine}
+                        isActive={debugActive}
+                        className="h-full"
+                      />
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                )}
               </div>
 
               {/* Output Panel */}
