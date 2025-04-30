@@ -71,16 +71,18 @@ export function CodeEditor({
 
   return (
     <div className={cn("h-full w-full overflow-hidden", className)}>
-      <style jsx global>{`
-        .breakpoint-glyph {
-          background-color: #e51400;
-          border-radius: 50%;
-          width: 8px !important;
-          height: 8px !important;
-          margin-left: 5px;
-          margin-top: 2px;
-        }
-      `}</style>
+      <style>
+        {`
+          .breakpoint-glyph {
+            background-color: #e51400;
+            border-radius: 50%;
+            width: 8px !important;
+            height: 8px !important;
+            margin-left: 5px;
+            margin-top: 2px;
+          }
+        `}
+      </style>
       <Editor
         height="100%"
         width="100%"
