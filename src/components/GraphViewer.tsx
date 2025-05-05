@@ -1,13 +1,14 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Network } from "lucide-react";
+import { Network, X } from "lucide-react";
 import { 
   ChartContainer, 
   ChartTooltip, 
   ChartTooltipContent 
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GraphViewerProps {
   graphData: {
@@ -23,9 +24,10 @@ interface GraphViewerProps {
     }>;
   };
   className?: string;
+  onClose?: () => void;
 }
 
-export function GraphViewer({ graphData, className }: GraphViewerProps) {
+export function GraphViewer({ graphData, className, onClose }: GraphViewerProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -77,22 +79,55 @@ export function GraphViewer({ graphData, className }: GraphViewerProps) {
           <h3 className="text-sm font-medium">Graph Visualization</h3>
         </div>
         <div className="flex items-center gap-1">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleZoomOut}
-            className="h-7 w-7 p-0"
-          >
-            -
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleZoomIn}
-            className="h-7 w-7 p-0"
-          >
-            +
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleZoomOut}
+                  className="h-7 w-7 p-0"
+                >
+                  -
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Zoom Out</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleZoomIn}
+                  className="h-7 w-7 p-0"
+                >
+                  +
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Zoom In</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          {onClose && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onClose}
+                    className="h-7 w-7 p-0 ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Close Graph View</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </div>
       

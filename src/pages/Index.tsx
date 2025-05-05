@@ -162,6 +162,11 @@ const Index = () => {
     }
   }, [showGraph, toast]);
 
+  // New function to handle closing the graph viewer
+  const closeGraphViewer = useCallback(() => {
+    setShowGraph(false);
+  }, []);
+
   // Sync breakpoints with debugger service on mount
   useEffect(() => {
     setBreakpoints(getBreakpoints());
@@ -276,6 +281,7 @@ const Index = () => {
                       <GraphViewer 
                         graphData={graphData} 
                         className="h-full"
+                        onClose={closeGraphViewer}
                       />
                     </div>
                   </div>
