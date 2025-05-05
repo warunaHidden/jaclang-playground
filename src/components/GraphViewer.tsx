@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Graph } from "lucide-react";
+import { Network } from "lucide-react";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -73,7 +73,7 @@ export function GraphViewer({ graphData, className }: GraphViewerProps) {
     >
       <div className="border-b border-border p-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Graph className="h-4 w-4 text-primary" />
+          <Network className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-medium">Graph Visualization</h3>
         </div>
         <div className="flex items-center gap-1">

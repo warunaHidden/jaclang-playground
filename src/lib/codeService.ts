@@ -1,4 +1,5 @@
-import { JacDebugger } from "jac-debugger";
+
+import { JacDebugger } from "./jac-debugger";
 import { defaultCode } from "./examples";
 
 let debuggerInstance: JacDebugger | null = null;

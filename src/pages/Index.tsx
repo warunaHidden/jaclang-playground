@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Play, RefreshCw, FileCode, Menu, LayoutPanelRight } from "lucide-react";
+import { Play, RefreshCw, FileCode, Menu, LayoutPanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/CodeEditor";
 import { OutputPanel } from "@/components/OutputPanel";
@@ -223,7 +223,7 @@ const Index = () => {
                     onClick={toggleGraphViewer}
                     className={`space-x-1 ${showGraph ? 'bg-secondary/20 text-secondary' : ''}`}
                   >
-                    <LayoutPanelRight className="h-4 w-4" />
+                    <LayoutPanelLeft className="h-4 w-4" />
                     <span className="hidden sm:inline">Graph</span>
                   </Button>
                 )}
