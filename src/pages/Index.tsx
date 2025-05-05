@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useCallback } from "react";
-import { Play, RefreshCw, FileCode, Menu } from "lucide-react";
+import { Play, RefreshCw, FileCode, Menu, LayoutPanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/CodeEditor";
 import { OutputPanel } from "@/components/OutputPanel";
@@ -10,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DebugPanel, DebugState } from "@/components/DebugPanel";
 import { DebugControls, DebugAction } from "@/components/DebugControls";
+import { GraphViewer } from "@/components/GraphViewer";
 import { 
   executeCode, 
   startDebugging, 
@@ -18,7 +18,8 @@ import {
   toggleBreakpoint,
   getBreakpoints,
   getIsPaused,
-  getIsDebugging
+  getIsDebugging,
+  getGraphData
 } from "@/lib/codeService";
 import { defaultCode } from "@/lib/examples";
 import { useMobileDetect } from "@/hooks/useMobileDetect";
@@ -33,6 +34,9 @@ const Index = () => {
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
   const [isDebugging, setIsDebugging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+  const [graphData, setGraphData] = useState<DebugState["graph"] | null>(null);
+  const [hasRun, setHasRun] = useState(false);
   
   const isMobile = useMobileDetect();
   const { toast } = useToast();
@@ -52,6 +56,10 @@ const Index = () => {
         setOutput("");
         const result = await executeCode(code);
         setOutput(result);
+        // After successful execution, we can get graph data
+        const graph = getGraphData();
+        setGraphData(graph);
+        setHasRun(true);
       } catch (error) {
         console.error("Failed to execute code:", error);
         setOutput("Error: Failed to execute code.");
@@ -141,6 +149,19 @@ const Index = () => {
     setShowMobileSidebar(!showMobileSidebar);
   };
 
+  // Toggle graph viewer
+  const toggleGraphViewer = useCallback(() => {
+    setShowGraph(prev => !prev);
+    
+    if (!showGraph) {
+      toast({
+        title: "Graph Viewer",
+        description: "Showing generated graph visualization",
+        duration: 2000,
+      });
+    }
+  }, [showGraph, toast]);
+
   // Sync breakpoints with debugger service on mount
   useEffect(() => {
     setBreakpoints(getBreakpoints());
@@ -194,6 +215,18 @@ const Index = () => {
                   <RefreshCw className="h-4 w-4" />
                   <span>Reset</span>
                 </Button>
+                
+                {/* Show Graph button - only in normal mode and after running */}
+                {!isDebugging && hasRun && (
+                  <Button
+                    variant="outline"
+                    onClick={toggleGraphViewer}
+                    className={`space-x-1 ${showGraph ? 'bg-secondary/20 text-secondary' : ''}`}
+                  >
+                    <LayoutPanelRight className="h-4 w-4" />
+                    <span className="hidden sm:inline">Graph</span>
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -206,7 +239,7 @@ const Index = () => {
 
             {/* Editor and output panels */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Editor Section - split into editor and debug panel in debug mode */}
+              {/* Editor Section - split into editor and debug panel in debug mode or graph viewer in normal mode */}
               <div className="flex-1 overflow-hidden">
                 {isDebugging ? (
                   <div className="flex h-full">
@@ -223,6 +256,25 @@ const Index = () => {
                     <div className="flex-1">
                       <DebugPanel 
                         debugState={debugState} 
+                        className="h-full"
+                      />
+                    </div>
+                  </div>
+                ) : showGraph && graphData ? (
+                  <div className="flex h-full">
+                    <div className="flex-1 border-r border-border">
+                      <CodeEditor
+                        value={code}
+                        onChange={setCode}
+                        language="python" // Using Python as closest syntax to Jaclang
+                        breakpoints={breakpoints}
+                        onToggleBreakpoint={handleToggleBreakpoint}
+                        className="h-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <GraphViewer 
+                        graphData={graphData} 
                         className="h-full"
                       />
                     </div>
